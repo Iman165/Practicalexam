@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -7,15 +6,17 @@ require('dotenv').config();
 
 const app = express();
 
-// Enable CORS for all origins (important for frontend-backend communication)
+// Serve static HTML/CSS/JS files from public folder
+app.use(express.static('public'));
+
+// Enable CORS
 app.use(cors());
 
-// Parse JSON bodies
+// Parse JSON
 app.use(bodyParser.json());
 
-// Mongo URI from environment variable
+// Mongo URI
 const mongoURI = process.env.MONGO_URI;
-
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected'))
   .catch(err => {
@@ -23,7 +24,7 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     process.exit(1);
   });
 
-// Define User schema and model
+// Mongoose User Model
 const userSchema = new mongoose.Schema({
   username: String,
   email: String,
@@ -31,26 +32,21 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// Registration route
+// Register Route
 app.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
-
-    // Validate inputs
     if (!username || !email || !password) {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Save new user (Note: password is not hashed here - for demo only)
     const newUser = new User({ username, email, password });
     await newUser.save();
-
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     console.error('Registration error:', error);
@@ -58,7 +54,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Start server
+// Run server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
