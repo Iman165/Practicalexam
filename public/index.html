@@ -23,7 +23,7 @@
       };
 
       try {
-        const res = await fetch('http://localhost:3000/register', {  // <-- Full backend URL here
+        const res = await fetch('https://cicd-production-5ef1.up.railway.app/register', {  // <-- Full backend URL here
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(data)
