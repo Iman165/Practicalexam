@@ -28,4 +28,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: bismarafique/registration-app:latest
+        tags: imanfarhat/registration-app:latest

@@ -6,16 +6,12 @@ require('dotenv').config();
 
 const app = express();
 
-// Serve static HTML/CSS/JS files from public folder
-app.use(express.static('public'));
-
-// Enable CORS
+// Middleware
+app.use(express.static('public'));  // to serve contact.html from 'public' folder
 app.use(cors());
-
-// Parse JSON
 app.use(bodyParser.json());
 
-// Mongo URI
+// MongoDB connection
 const mongoURI = process.env.MONGO_URI;
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected'))
@@ -24,37 +20,32 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     process.exit(1);
   });
 
-// Mongoose User Model
-const userSchema = new mongoose.Schema({
-  username: String,
+// Mongoose model
+const contactSchema = new mongoose.Schema({
+  name: String,
   email: String,
-  password: String,
+  message: String,
+  createdAt: { type: Date, default: Date.now }
 });
-const User = mongoose.model('User', userSchema);
+const Contact = mongoose.model('Contact', contactSchema);
 
-// Register Route
-app.post('/register', async (req, res) => {
+// Route
+app.post('/contact', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: 'Please provide all required fields' });
+    const { name, email, message } = req.body;
+    if (!name || !email || !message) {
+      return res.status(400).json({ message: 'Please fill in all fields' });
     }
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    const newUser = new User({ username, email, password });
-    await newUser.save();
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (error) {
-    console.error('Registration error:', error);
+    await new Contact({ name, email, message }).save();
+    res.json({ message: 'Message received successfully!' });
+  } catch (err) {
+    console.error('Contact form error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Run server
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
